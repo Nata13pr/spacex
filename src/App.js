@@ -59,7 +59,7 @@ class App extends Component {
   //     this.toggleModal();
   //   }
   // }
-
+      
   toggleModal = () => {
     this.setState(({ showModal }) => ({
       showModal: !showModal,
