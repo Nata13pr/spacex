@@ -11,8 +11,18 @@ export default function Provider ({children}){
     const [mission, setMission] = useLocalStorage('mission','')
     const [rocket, setRocket] = useLocalStorage('rocket','')
     const [flight, setFlight] = useLocalStorage('flight','');
-    const [page,setPage]=useState(1);
-  
+    const [selectedImage,setSelectedImage]=useState('');
+    
+//   useEffect(()=>{
+//     selectImage()
+//   },[selectedImage])
+
+  const selectImage=(item)=>{
+    console.log(item.details
+        );
+    setSelectedImage(item.details)
+}
+
   useEffect (()=>{
       window.localStorage.setItem('mission',JSON.stringify(mission))
   },[mission]);
@@ -28,7 +38,7 @@ export default function Provider ({children}){
     useEffect(() => {
       // fetchLaunches();
       const fetchLaunches = () => {
-        fetch(`https://api.spacexdata.com/v3/launches?page=${page}`)
+        fetch("https://api.spacexdata.com/v3/launches")
           .then((response) => {
             if (response.ok) {
               return response.json();
@@ -37,7 +47,7 @@ export default function Provider ({children}){
           })
           .then((data) => {
             console.log(data);
-            setData(prev=>[...prev,...data]);
+            setData((prevState) => [...data]);
           })
           .catch((error) => {
             setError(error);
@@ -46,10 +56,6 @@ export default function Provider ({children}){
       fetchLaunches();
     }, []);
   
-const handleAddPage=()=>{
-    setPage(page=>page+1)
-}
-
     const handleChangeFIlter = (event) => {
       const { name, value } = event.target;
   
@@ -89,7 +95,7 @@ const handleAddPage=()=>{
     // };
   
     const toggleModal = () => {
-      setShowModal((prevState) => !prevState);
+      setSelectedImage((prevState) => !prevState);
     };
   
     const changeFilter = (e) => {
@@ -97,19 +103,21 @@ const handleAddPage=()=>{
     };
   
     const getVisibleData = () => {
-      const normalizedFilter = filter.toLowerCase().trim();
+      const normalizedFilter = filter.toLowerCase();
       return data.filter((item) =>
         item.rocket.rocket_name.toLowerCase().includes(normalizedFilter)
       );
     };
   
+
+
     const handlerDetails = (e) => {
       setDetails(e.details);
     };
 
     const providerValue=useMemo(()=>{
-        return{data,error,filter,showModal,details,mission,rocket,flight,handleChangeFIlter,toggleModal,changeFilter,getVisibleData,handlerDetails,handleAddPage}
-    },[data,error,filter,showModal,details,mission,rocket,flight,getVisibleData,handleChangeFIlter])
+        return{selectedImage,data,error,filter,showModal,details,mission,rocket,flight,handleChangeFIlter,toggleModal,changeFilter,getVisibleData,handlerDetails,selectImage}
+    },[data,selectedImage,error,filter,showModal,details,mission,rocket,flight,getVisibleData,handleChangeFIlter])
 
     return(
         <authContext.Provider value={providerValue}>
