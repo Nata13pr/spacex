@@ -1,21 +1,9 @@
 import { useEffect, useState } from "react";
 import Filter from "../Components/Filter/Filter";
 import Modal from "../Components/Modal/Modal";
+import useLocalStorage from "../hooks/useLocalStorage";
 
-const useLocalStorage =(key,
-    defaultValue,
-    serialize=JSON.stringify,
-    deserialize=JSON.parse)=>{
-    const [state, setState] = useState(()=>{
-        return deserialize(window.localStorage.getItem(key)) ?? defaultValue;
-      });
 
-      useEffect (()=>{
-        window.localStorage.setItem(key,serialize(state))
-    },[key,state,serialize]);
-
-    return [state,setState]
-}
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -40,6 +28,23 @@ useEffect(()=>{
     window.localStorage.setItem('flight',JSON.stringify(flight))
 },[flight])
   useEffect(() => {
+    // fetchLaunches();
+    const fetchLaunches = () => {
+      fetch("https://api.spacexdata.com/v3/launches")
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          return Promise.reject(new Error("No data available"));
+        })
+        .then((data) => {
+          console.log(data);
+          setData((prevState) => [...data]);
+        })
+        .catch((error) => {
+          setError(error);
+        });
+    };
     fetchLaunches();
   }, []);
 
@@ -63,22 +68,23 @@ useEffect(()=>{
         return;
     }
   };
-  const fetchLaunches = () => {
-    fetch("https://api.spacexdata.com/v3/launches")
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        return Promise.reject(new Error("No data available"));
-      })
-      .then((data) => {
-        console.log(data);
-        setData((prevState) => [...data]);
-      })
-      .catch((error) => {
-        setError(error);
-      });
-  };
+
+  // const fetchLaunches = () => {
+  //   fetch("https://api.spacexdata.com/v3/launches")
+  //     .then((response) => {
+  //       if (response.ok) {
+  //         return response.json();
+  //       }
+  //       return Promise.reject(new Error("No data available"));
+  //     })
+  //     .then((data) => {
+  //       console.log(data);
+  //       setData((prevState) => [...data]);
+  //     })
+  //     .catch((error) => {
+  //       setError(error);
+  //     });
+  // };
 
   const toggleModal = () => {
     setShowModal((prevState) => !prevState);
@@ -126,6 +132,9 @@ useEffect(()=>{
           );
         })}
       </ul>
+      <button 
+      // onClick={()=>setPage(page=>page+1)}
+      >Load More</button>
     </div>
   );
 }
