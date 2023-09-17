@@ -1,119 +1,175 @@
+import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
-import useLocalStorage from "../../hooks/useLocalStorage";
-import authContext from './context'
+import authContext from "./context";
 
-export default function Provider ({children}){
-    const [data, setData] = useState([]);
-    const [error, setError] = useState(null);
-    const [filter, setFilter] = useState("");
-    const [showModal, setShowModal] = useState(false);
-    const [details, setDetails] = useState("");
-    const [mission, setMission] = useLocalStorage('mission','')
-    const [rocket, setRocket] = useLocalStorage('rocket','')
-    const [flight, setFlight] = useLocalStorage('flight','');
-    const [page,setPage]=useState(1);
+export default function Provider({ children }) {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [details, setDetails] = useState("");
+  const [rocketNumber, setRocketNumber] = useState('')
+  const [rocketName, setRocketName] = useState('')
+  const [flight, setFlight] = useState('')
+  const [page, setPage] = useState(1);
   
-  useEffect (()=>{
-      window.localStorage.setItem('mission',JSON.stringify(mission))
-  },[mission]);
+
+  useEffect(() => {
+    const getVisibleData = () => {
+   
+      return data.filter(
+        (item) =>
+          item.name.toLowerCase().includes(rocketName.toLowerCase().trim()) || data
+          .filter(
+            (item) =>
+              item.name.toLowerCase().includes(rocketName.toLowerCase().trim())) || data
+              .filter(
+                (item) => item.flight_number === Number(flight.toLowerCase().trim()) || data
+              )
+          );
   
-  useEffect(()=>{
-      window.localStorage.setItem('rocket',JSON.stringify(rocket));
-  },[rocket])
+    };
+    setData(getVisibleData());
+  }, [rocketName, flight, rocketNumber]);
+
+  const rocketNameVisible = () => {
+    return data.filter(
+      (item) =>
+        item.name.toLowerCase().includes(rocketName.toLowerCase().trim()) 
+    );
+  };
+
+  const flightVisible = () => {
+    return data.filter(
+      (item) => item.flight_number === Number(flight.toLowerCase().trim()) 
+    );
+  };
+
+  const rocketNumberVisible = () => {
+    return (
+      data.filter((item) =>
+        item.rocket.toLowerCase().includes(rocketNumber.toLowerCase().trim())
+      ) 
+    );
+  };
   
   
-  useEffect(()=>{
-      window.localStorage.setItem('flight',JSON.stringify(flight))
-  },[flight])
-    useEffect(() => {
-      // fetchLaunches();
-      const fetchLaunches = () => {
-        fetch(`https://api.spacexdata.com/v3/launches?page=${page}`)
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            }
-            return Promise.reject(new Error("No data available"));
-          })
-          .then((data) => {
-            console.log(data);
-            setData(prev=>[...prev,...data]);
-          })
-          .catch((error) => {
-            setError(error);
-          });
-      };
-      fetchLaunches();
-    }, []);
-  
-const handleAddPage=()=>{
-    setPage(page=>page+1)
+
+
+
+const fetchLaunches=()=>{
+  return axios.post('https://api.spacexdata.com/v5/launches/query',{
+    query: {
+      
+    },
+    options: {
+      page
+    },
+  })
 }
 
-    const handleChangeFIlter = (event) => {
-      const { name, value } = event.target;
-  
-      switch (name) {
-        case "mission":
-          setMission(value);
-          break;
-  
-        case "rocket":
-          setRocket(value);
-          break;
-  
-        case "flight":
-          setFlight(value);
-          break;
-  
-        default:
-          return;
-      }
-    };
-  
-    // const fetchLaunches = () => {
-    //   fetch("https://api.spacexdata.com/v3/launches")
-    //     .then((response) => {
-    //       if (response.ok) {
-    //         return response.json();
-    //       }
-    //       return Promise.reject(new Error("No data available"));
-    //     })
-    //     .then((data) => {
-    //       console.log(data);
-    //       setData((prevState) => [...data]);
-    //     })
-    //     .catch((error) => {
-    //       setError(error);
-    //     });
-    // };
-  
-    const toggleModal = () => {
-      setShowModal((prevState) => !prevState);
-    };
-  
-    const changeFilter = (e) => {
-      setFilter(e.currentTarget.value);
-    };
-  
-    const getVisibleData = () => {
-      const normalizedFilter = filter.toLowerCase().trim();
-      return data.filter((item) =>
-        item.rocket.rocket_name.toLowerCase().includes(normalizedFilter)
-      );
-    };
-  
-    const handlerDetails = (e) => {
-      setDetails(e.details);
-    };
+  useEffect(() => {
+    
+      fetchLaunches()
+        .then((response) => {
+          if (response.status !== 200) {
+            console.log("error");
+            return Promise.reject(new Error("No data available"));
+          }
+          console.log(response);
+          setData((prev) => [...prev, ...response.data.docs]);
 
-    const providerValue=useMemo(()=>{
-        return{data,error,filter,showModal,details,mission,rocket,flight,handleChangeFIlter,toggleModal,changeFilter,getVisibleData,handlerDetails,handleAddPage}
-    },[data,error,filter,showModal,details,mission,rocket,flight,getVisibleData,handleChangeFIlter])
+          return "next then will get this string. Becouse i return this string.";
+        })
+    
+        .catch((error) => {
+          setError(error);
+        });
+    
+    
+  }, []);
 
-    return(
-        <authContext.Provider value={providerValue}>
-            {children}
-        </authContext.Provider>
-    )
+ 
+  const handleAddPage = (page) => {
+    setPage((page) => page + 1);
+    fetchLaunches().then(response=>{
+      setData((prev)=>{
+        return [...prev,...response.data.docs]
+      })
+    })
+
+  };
+
+  const handleChangeFIlter = (event) => {
+    const { name, value } = event.target;
+
+    switch (name) {
+      case "rocketNumber":
+        setRocketNumber(value);
+        break;
+
+      case "rocketName":
+        setRocketName(value);
+        break;
+
+      case "flight":
+        setFlight(value);
+        break;
+
+      default:
+        return;
+    }
+  };
+
+  
+
+  const toggleModal = () => {
+    setShowModal((prevState) => !prevState);
+  };
+
+  const changeFilter = (e) => {
+    setFilter(e.currentTarget.value);
+  };
+
+  const handlerDetails = (e) => {
+    setDetails(e.details);
+  };
+
+  const providerValue = useMemo(() => {
+    return {
+      data,
+      error,
+      filter,
+      showModal,
+      details,
+      rocketNumber,
+      rocketName,
+      flight,
+      handleChangeFIlter,
+      toggleModal,
+      changeFilter,
+      // getVisibleData,
+      handlerDetails,
+      handleAddPage,
+      page,
+    };
+  }, [
+    data,
+    error,
+    filter,
+    showModal,
+    details,
+    rocketNumber,
+    rocketName,
+    flight,
+    page,
+    // getVisibleData,
+    handleChangeFIlter,
+  ]);
+
+  return (
+    <authContext.Provider value={providerValue}>
+      {children}
+    </authContext.Provider>
+  );
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import AppNew2 from './AppNew2/AppNew2';
+import AppNew2 from './App';
 import './index.css';
 import AppNew from './New/AppNew.js'
-import AuthProvider from './context/auth/Provider'
+
 // import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -12,7 +12,7 @@ root.render(
   <React.StrictMode>
     {/* <App /> */}
     {/* <AppNew/> */}
-    <AuthProvider><AppNew2 /></AuthProvider>
+    <AppNew2 />
     
   </React.StrictMode>
 );

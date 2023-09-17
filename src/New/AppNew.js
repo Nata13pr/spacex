@@ -3,30 +3,28 @@ import Filter from "../Components/Filter/Filter";
 import Modal from "../Components/Modal/Modal";
 import useLocalStorage from "../hooks/useLocalStorage";
 
-
-
 export default function App() {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [details, setDetails] = useState("");
-  const [mission, setMission] = useLocalStorage('mission','')
-  const [rocket, setRocket] = useLocalStorage('rocket','')
-  const [flight, setFlight] = useLocalStorage('flight','');
+  const [mission, setMission] = useLocalStorage("mission", "");
+  const [rocket, setRocket] = useLocalStorage("rocket", "");
+  const [flight, setFlight] = useLocalStorage("flight", "");
+  const [page, setPage] = useState("");
 
-useEffect (()=>{
-    window.localStorage.setItem('mission',JSON.stringify(mission))
-},[mission]);
+  useEffect(() => {
+    window.localStorage.setItem("mission", JSON.stringify(mission));
+  }, [mission]);
 
-useEffect(()=>{
-    window.localStorage.setItem('rocket',JSON.stringify(rocket));
-},[rocket])
+  useEffect(() => {
+    window.localStorage.setItem("rocket", JSON.stringify(rocket));
+  }, [rocket]);
 
-
-useEffect(()=>{
-    window.localStorage.setItem('flight',JSON.stringify(flight))
-},[flight])
+  useEffect(() => {
+    window.localStorage.setItem("flight", JSON.stringify(flight));
+  }, [flight]);
   useEffect(() => {
     // fetchLaunches();
     const fetchLaunches = () => {
@@ -132,9 +130,7 @@ useEffect(()=>{
           );
         })}
       </ul>
-      <button 
-      // onClick={()=>setPage(page=>page+1)}
-      >Load More</button>
+      <button onClick={() => setPage((page) => page + 1)}>Load More</button>
     </div>
   );
 }
